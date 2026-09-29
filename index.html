@@ -1,0 +1,1740 @@
+<title>ApexBioX Endotoxin Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* ── APEXBIOX TOKENS ─────────────────────────────────────── */
+:root {
+  /* Light — white/pearl ground with purple brand */
+  --bg:           #f7f5fc;
+  --surface:      #ffffff;
+  --surface2:     #f0ecf9;
+  --surface3:     #e6e0f5;
+  --border:       #dcd4f0;
+  --border2:      #c9bde8;
+  --text:         #12082e;
+  --text2:        #3d2970;
+  --text3:        #7b65a8;
+  --text4:        #a895cc;
+  --accent:       #6b21d4;   /* deep violet */
+  --accent2:      #8b3cf7;   /* bright violet */
+  --accent-dim:   #ede8fb;
+  --accent-glow:  rgba(107,33,212,.12);
+  --safe:         #16a34a;
+  --safe-bg:      #f0fdf4;
+  --safe-border:  #86efac;
+  --unsafe:       #dc2626;
+  --unsafe-bg:    #fff1f1;
+  --unsafe-border:#fca5a5;
+  --warn:         #b45309;
+  --warn-bg:      #fffbeb;
+  --warn-border:  #fde68a;
+  --track:        #e6e0f5;
+  --radius:       14px;
+  --radius-sm:    9px;
+  --shadow:       0 1px 4px rgba(60,20,100,.07), 0 1px 2px rgba(60,20,100,.04);
+  --shadow-md:    0 4px 16px rgba(60,20,100,.10);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:           #0d0720;
+    --surface:      #160d30;
+    --surface2:     #1e1240;
+    --surface3:     #261850;
+    --border:       #32205a;
+    --border2:      #422d72;
+    --text:         #ede8ff;
+    --text2:        #c4b5f0;
+    --text3:        #8b78c4;
+    --text4:        #5d4c8a;
+    --accent:       #a87dff;
+    --accent2:      #c4a2ff;
+    --accent-dim:   #1e1240;
+    --accent-glow:  rgba(168,125,255,.15);
+    --safe:         #4ade80;
+    --safe-bg:      #052e16;
+    --safe-border:  #166534;
+    --unsafe:       #f87171;
+    --unsafe-bg:    #3f0707;
+    --unsafe-border:#991b1b;
+    --warn:         #fbbf24;
+    --warn-bg:      #1c1400;
+    --warn-border:  #92400e;
+    --track:        #261850;
+    --shadow:       0 1px 4px rgba(0,0,0,.4);
+    --shadow-md:    0 4px 16px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"] {
+  --bg:           #0d0720;
+  --surface:      #160d30;
+  --surface2:     #1e1240;
+  --surface3:     #261850;
+  --border:       #32205a;
+  --border2:      #422d72;
+  --text:         #ede8ff;
+  --text2:        #c4b5f0;
+  --text3:        #8b78c4;
+  --text4:        #5d4c8a;
+  --accent:       #a87dff;
+  --accent2:      #c4a2ff;
+  --accent-dim:   #1e1240;
+  --accent-glow:  rgba(168,125,255,.15);
+  --safe:         #4ade80;
+  --safe-bg:      #052e16;
+  --safe-border:  #166534;
+  --unsafe:       #f87171;
+  --unsafe-bg:    #3f0707;
+  --unsafe-border:#991b1b;
+  --warn:         #fbbf24;
+  --warn-bg:      #1c1400;
+  --warn-border:  #92400e;
+  --track:        #261850;
+  --shadow:       0 1px 4px rgba(0,0,0,.4);
+  --shadow-md:    0 4px 16px rgba(0,0,0,.4);
+}
+
+/* ── RESET ───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+h1,h2,h3,.mono { font-family: 'Space Grotesk', system-ui, sans-serif; }
+
+/* ── HEADER ──────────────────────────────────────────────── */
+.app-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 60;
+  box-shadow: var(--shadow);
+}
+.header-inner {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ApexBioX triangle logo mark */
+.logo-mark {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+}
+
+.app-title-block {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+.app-title-name {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -.01em;
+  color: var(--text);
+}
+.app-title-name .x-purple { color: var(--accent2); }
+.app-title-tagline {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--text4);
+}
+.app-title-tool {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  color: var(--accent);
+}
+
+.theme-btn {
+  width: 36px; height: 36px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text3);
+  transition: background .15s;
+  flex-shrink: 0;
+}
+.theme-btn:hover { background: var(--surface3); }
+
+/* ── TABS ────────────────────────────────────────────────── */
+.tabs-wrap {
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs-wrap::-webkit-scrollbar { display: none; }
+.tabs {
+  display: flex;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+.tab-btn {
+  padding: 11px 14px;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--text4);
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color .15s, border-color .15s;
+}
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent2); }
+.tab-btn:hover:not(.active) { color: var(--text2); }
+
+/* ── LAYOUT ──────────────────────────────────────────────── */
+.main {
+  max-width: 700px;
+  margin: 0 auto;
+  padding-block: 16px 72px;
+  padding-inline: 16px;
+  box-sizing: border-box;
+  width: 100%;
+}
+@media (max-width: 700px) {
+  .main { max-width: 100%; padding-inline: 0; }
+  .header-inner { max-width: 100%; }
+  .tabs { max-width: 100%; }
+  .card, .result-card { border-radius: 0; border-left: none; border-right: none; margin-bottom: 8px; }
+  .section-hdr, .section-body, .math-btn, .math-panel { border-radius: 0; border-left: none; border-right: none; }
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── CARD ────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+}
+.card-label {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--text4);
+  margin-bottom: 16px;
+}
+
+/* ── FORM ────────────────────────────────────────────────── */
+.field { margin-bottom: 14px; }
+.field:last-child { margin-bottom: 0; }
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.field-label-opt { font-size: 11px; font-weight: 400; color: var(--text4); }
+.input-row { display: flex; gap: 8px; }
+
+input[type="number"], input[type="text"] {
+  flex: 1;
+  height: 46px;
+  padding: 0 14px;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  -webkit-appearance: none;
+  min-width: 0;
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+input[type="text"] { font-size: 16px; font-weight: 500; }
+input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  background: var(--surface);
+}
+input.err { border-color: var(--unsafe); }
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button { -webkit-appearance: none; }
+input[type="number"] { -moz-appearance: textfield; }
+
+select {
+  height: 46px;
+  padding: 0 32px 0 14px;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1.5l5 5 5-5' stroke='%238b78c4' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition: border-color .15s;
+  min-width: 80px;
+}
+select:focus { border-color: var(--accent); }
+
+.unit-badge {
+  height: 46px;
+  padding: 0 16px;
+  display: flex; align-items: center;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text3);
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: .03em;
+}
+
+/* ── TOOLTIP ─────────────────────────────────────────────── */
+.tip-wrap { position: relative; display: inline-flex; align-items: center; }
+.tip-icon {
+  width: 16px; height: 16px;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text3);
+  cursor: help;
+  user-select: none;
+  flex-shrink: 0;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+}
+.tip-bubble {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: var(--surface);
+  font-size: 12px;
+  font-weight: 400;
+  font-family: 'Inter', system-ui, sans-serif;
+  padding: 9px 13px;
+  border-radius: 8px;
+  width: 230px;
+  line-height: 1.45;
+  z-index: 100;
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+}
+.tip-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%; left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--text);
+}
+.tip-wrap:hover .tip-bubble,
+.tip-wrap:focus-within .tip-bubble { display: block; }
+
+/* ── MESSAGES ────────────────────────────────────────────── */
+.field-warn {
+  display: none;
+  margin-top: 7px;
+  padding: 10px 13px;
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-border);
+  border-radius: 7px;
+  font-size: 13px;
+  color: var(--warn);
+  font-weight: 500;
+  line-height: 1.45;
+}
+.field-warn.show { display: block; }
+.field-errmsg {
+  display: none;
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--unsafe);
+  font-weight: 500;
+}
+.field-errmsg.show { display: block; }
+
+/* ── ADV OPTIONS ─────────────────────────────────────────── */
+.adv-toggle {
+  display: flex; align-items: center; gap: 7px;
+  background: none; border: none;
+  font-size: 13px; font-weight: 600;
+  color: var(--text3);
+  cursor: pointer; padding: 0;
+  user-select: none;
+  transition: color .15s;
+}
+.adv-toggle:hover { color: var(--accent); }
+.adv-chev { transition: transform .2s; flex-shrink: 0; }
+.adv-toggle.open .adv-chev { transform: rotate(180deg); }
+.adv-body { display: none; margin-top: 16px; }
+.adv-body.open { display: block; }
+
+/* ── PRIMARY BUTTON ──────────────────────────────────────── */
+.btn-primary {
+  width: 100%;
+  height: 54px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+  color: #fff;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: opacity .15s, transform .1s, box-shadow .15s;
+  box-shadow: 0 4px 16px rgba(107,33,212,.25);
+  margin-top: 6px;
+}
+.btn-primary:hover { opacity: .9; box-shadow: 0 6px 20px rgba(107,33,212,.35); }
+.btn-primary:active { transform: scale(.99); }
+
+/* ── RESULT CARD ─────────────────────────────────────────── */
+.result-card {
+  border-radius: var(--radius);
+  border: 2px solid transparent;
+  padding: 18px 16px 16px;
+  margin-bottom: 14px;
+  display: none;
+  animation: slideUp .25s ease;
+}
+.result-card.show { display: block; }
+.result-card.safe { background: var(--safe-bg); border-color: var(--safe-border); }
+.result-card.unsafe { background: var(--unsafe-bg); border-color: var(--unsafe-border); }
+@keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+
+/* Verdict header — big SAFE/UNSAFE + FDA/USP line */
+.verdict-header { text-align: center; margin-bottom: 14px; }
+.verdict {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.verdict.safe { color: var(--safe); }
+.verdict.unsafe { color: var(--unsafe); }
+.verdict-ref {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  margin-bottom: 0;
+}
+.verdict-ref.safe  { color: var(--safe); }
+.verdict-ref.unsafe { color: var(--unsafe); }
+
+/* % of reference — the most prominent number after SAFE/UNSAFE */
+.pct-hero {
+  text-align: center;
+  margin-bottom: 12px;
+}
+.pct-hero-val {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 36px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.pct-hero-val.safe   { color: var(--safe); }
+.pct-hero-val.unsafe { color: var(--unsafe); }
+.pct-hero-lbl {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-top: 2px;
+}
+
+/* KPI row — 2-col: Your Exposure + FDA/USP Reference */
+.kpi-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 10px 8px;
+  text-align: center;
+}
+.kpi-lbl {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text4);
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+.kpi-val {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.kpi-unit { font-size: 10px; font-weight: 600; color: var(--text3); margin-top: 2px; }
+
+/* ── GAUGE ───────────────────────────────────────────────── */
+.gauge-section { margin-bottom: 14px; }
+.gauge-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--text4); margin-bottom: 6px;
+}
+.gauge-track {
+  background: var(--track); border-radius: 999px;
+  height: 14px; position: relative; overflow: visible;
+}
+.gauge-fill {
+  height: 100%; border-radius: 999px;
+  min-width: 4px; transition: width .4s ease;
+}
+.gauge-fill.safe  { background: linear-gradient(90deg, #16a34a, #22c55e); }
+.gauge-fill.unsafe { background: linear-gradient(90deg, #dc2626, #f87171); }
+.gauge-ref-line {
+  position: absolute; top: -5px;
+  width: 2px; height: 24px;
+  background: var(--unsafe); border-radius: 1px; display: none;
+}
+.gauge-needle { position: relative; height: 28px; margin-top: 4px; }
+.gauge-ptr {
+  position: absolute; transform: translateX(-50%);
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 11px; font-weight: 700; color: var(--text);
+  white-space: nowrap; top: 0;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 1px; font-variant-numeric: tabular-nums;
+}
+.gauge-ptr-arrow { font-size: 8px; color: var(--text3); line-height: 1; }
+
+.margin-chip {
+  text-align: center;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 12px; font-weight: 700;
+  margin-bottom: 14px; letter-spacing: .03em;
+}
+.margin-chip.safe  { color: var(--safe); }
+.margin-chip.unsafe { color: var(--unsafe); }
+
+.result-narrative {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  font-size: 13px; color: var(--text2); line-height: 1.65;
+}
+.result-scope-note {
+  margin-top: 8px; font-size: 11px;
+  color: var(--text4); font-style: italic;
+}
+
+/* ── SEE THE MATH ────────────────────────────────────────── */
+.math-btn {
+  display: none;
+  width: 100%; padding: 13px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 13px; font-weight: 600;
+  color: var(--accent);
+  cursor: pointer; text-align: left;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  align-items: center; justify-content: space-between;
+  transition: background .15s;
+}
+.math-btn.show { display: flex; }
+.math-btn:hover { background: var(--surface2); }
+.math-panel {
+  display: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px; margin-bottom: 14px;
+  box-shadow: var(--shadow);
+}
+.math-panel.open { display: block; }
+.math-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 9px 0; border-bottom: 1px solid var(--border);
+  font-size: 13px; gap: 12px;
+}
+.math-row:last-child { border-bottom: none; }
+.math-k { color: var(--text3); font-weight: 500; }
+.math-v {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 700; color: var(--text);
+  font-variant-numeric: tabular-nums; text-align: right;
+}
+
+/* ── COLLAPSIBLE ─────────────────────────────────────────── */
+.section-wrap { margin-bottom: 14px; }
+.section-hdr {
+  width: 100%;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px; font-weight: 600;
+  color: var(--text2);
+  cursor: pointer; text-align: left;
+  box-shadow: var(--shadow); transition: background .15s;
+}
+.section-hdr:hover { background: var(--surface2); }
+.section-hdr.open {
+  border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom: none;
+}
+.section-body {
+  display: none;
+  background: var(--surface);
+  border: 1px solid var(--border); border-top: none;
+  border-bottom-left-radius: var(--radius);
+  border-bottom-right-radius: var(--radius);
+  padding: 16px 18px 18px;
+  box-shadow: var(--shadow);
+}
+.section-body.open { display: block; }
+.sec-chev { transition: transform .2s; flex-shrink: 0; }
+.section-hdr.open .sec-chev { transform: rotate(180deg); }
+
+/* ── ADV COL TOGGLE ──────────────────────────────────────── */
+.adv-col-btn {
+  font-size: 12px; font-weight: 600;
+  color: var(--accent);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px; padding: 5px 10px;
+  cursor: pointer; margin-bottom: 12px;
+  transition: background .15s;
+}
+.adv-col-btn:hover { background: var(--accent-dim); }
+
+/* ── TABLES ──────────────────────────────────────────────── */
+.tbl-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th {
+  text-align: left; padding: 8px 10px;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text4);
+  border-bottom: 2px solid var(--border); white-space: nowrap;
+}
+td {
+  padding: 10px 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text2); font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+tr:last-child td { border-bottom: none; }
+tr.hl td { background: var(--accent-dim); color: var(--accent); font-weight: 700; }
+.badge {
+  display: inline-block; border-radius: 99px;
+  padding: 2px 9px;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .04em; white-space: nowrap;
+}
+.badge.safe   { background: var(--safe-bg);   color: var(--safe);   border: 1px solid var(--safe-border); }
+.badge.unsafe { background: var(--unsafe-bg); color: var(--unsafe); border: 1px solid var(--unsafe-border); }
+
+/* ── FAQ ─────────────────────────────────────────────────── */
+.faq-q {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 0; font-size: 14px; font-weight: 600;
+  color: var(--text); cursor: pointer; user-select: none;
+  gap: 10px; border-bottom: 1px solid var(--border);
+}
+.faq-q:first-child { padding-top: 0; }
+.faq-q.last { border-bottom: none; }
+.faq-a {
+  display: none; font-size: 13px; color: var(--text2);
+  line-height: 1.7; padding: 10px 0 14px;
+  border-bottom: 1px solid var(--border);
+}
+.faq-a.open { display: block; }
+.faq-chev { transition: transform .2s; flex-shrink: 0; }
+.faq-q.expanded .faq-chev { transform: rotate(180deg); }
+
+/* ── REVERSE CALC ────────────────────────────────────────── */
+.rev-result {
+  display: none;
+  background: var(--accent-dim);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 18px 20px; margin-bottom: 14px;
+}
+.rev-result.show { display: block; }
+.rev-title {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 14px;
+}
+.rev-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 9px 0; border-bottom: 1px solid var(--border);
+  font-size: 14px; gap: 12px;
+}
+.rev-row:last-child { border-bottom: none; }
+.rev-k { color: var(--text2); font-weight: 500; }
+.rev-v {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 800; font-size: 18px; color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── BATCH ───────────────────────────────────────────────── */
+.batch-entry {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px; margin-bottom: 10px; position: relative;
+}
+.batch-num {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 12px;
+}
+.batch-rm {
+  position: absolute; top: 10px; right: 10px;
+  background: none; border: none;
+  color: var(--text4); cursor: pointer;
+  font-size: 18px; line-height: 1; padding: 4px;
+  transition: color .15s;
+}
+.batch-rm:hover { color: var(--unsafe); }
+.mini-row { display: flex; gap: 8px; }
+.mini-field { flex: 1; min-width: 0; }
+.mini-label {
+  display: block; font-size: 11px; font-weight: 600;
+  color: var(--text3); margin-bottom: 5px;
+  letter-spacing: .04em; text-transform: uppercase;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+}
+.mini-input {
+  width: 100%; height: 44px; padding: 0 12px;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 16px; font-weight: 600; color: var(--text);
+  background: var(--surface); border: 2px solid var(--border);
+  border-radius: var(--radius-sm); outline: none;
+  -webkit-appearance: none; transition: border-color .15s;
+  min-width: 0; font-variant-numeric: tabular-nums;
+}
+.mini-input:focus { border-color: var(--accent); }
+.mini-select {
+  width: 100%; height: 44px; padding: 0 28px 0 10px;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 13px; font-weight: 600; color: var(--text);
+  background: var(--surface); border: 2px solid var(--border);
+  border-radius: var(--radius-sm); outline: none;
+  cursor: pointer; -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238b78c4' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center;
+}
+.mini-select:focus { border-color: var(--accent); }
+.add-batch-btn {
+  width: 100%; padding: 12px;
+  background: none; border: 2px dashed var(--border);
+  border-radius: var(--radius-sm); color: var(--text3);
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  margin-bottom: 12px;
+  transition: border-color .15s, color .15s;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+}
+.add-batch-btn:hover { border-color: var(--accent); color: var(--accent); }
+.sort-wrap { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+.sort-lbl {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 11px; font-weight: 700;
+  color: var(--text4); text-transform: uppercase; letter-spacing: .06em;
+}
+.sort-btn {
+  font-size: 12px; font-weight: 600;
+  color: var(--text3); background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 99px;
+  padding: 4px 12px; cursor: pointer;
+  transition: all .15s;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+}
+.sort-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ── QUICK CHECK ─────────────────────────────────────────── */
+.quick-verdict {
+  display: none; text-align: center;
+  padding: 28px 20px; border-radius: var(--radius);
+  margin-top: 14px; border: 2px solid transparent;
+  animation: slideUp .25s ease;
+}
+.quick-verdict.show { display: block; }
+.quick-verdict.safe   { background: var(--safe-bg);   border-color: var(--safe-border); }
+.quick-verdict.unsafe { background: var(--unsafe-bg); border-color: var(--unsafe-border); }
+.quick-text {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 24px; font-weight: 800;
+  letter-spacing: .05em; text-transform: uppercase; margin-bottom: 6px;
+}
+.quick-text.safe   { color: var(--safe); }
+.quick-text.unsafe { color: var(--unsafe); }
+.quick-sub  { font-size: 14px; color: var(--text3); margin-bottom: 6px; font-variant-numeric: tabular-nums; }
+.quick-scope { font-size: 11px; color: var(--text4); font-style: italic; }
+
+/* ── GLOSSARY ────────────────────────────────────────────── */
+.gloss-item { padding: 14px 0; border-bottom: 1px solid var(--border); }
+.gloss-item:last-child { border-bottom: none; }
+.gloss-term {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 14px; font-weight: 700;
+  color: var(--accent); margin-bottom: 4px; letter-spacing: .02em;
+}
+.gloss-def { font-size: 13px; color: var(--text2); line-height: 1.55; }
+
+/* ── DISCLAIMER ──────────────────────────────────────────── */
+.disclaimer {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 14px 18px; font-size: 12px;
+  color: var(--text3); line-height: 1.6; margin-bottom: 14px;
+}
+.disclaimer strong { color: var(--text2); }
+
+/* ── TESTS ───────────────────────────────────────────────── */
+.test-summary { display: flex; gap: 10px; margin-bottom: 16px; }
+.test-pill {
+  flex: 1; text-align: center;
+  padding: 12px; border-radius: 10px;
+}
+.test-pill-val {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 28px; font-weight: 800; line-height: 1; margin-bottom: 3px;
+}
+.test-pill-lbl {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+}
+.test-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+  font-size: 12px; gap: 8px;
+}
+.test-row:last-child { border-bottom: none; }
+.test-name { color: var(--text2); flex: 1; }
+.test-pass { font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 700; color: var(--safe); }
+.test-fail { font-family: 'Space Grotesk', system-ui, sans-serif; font-weight: 700; color: var(--unsafe); font-size: 11px; }
+
+/* ── CODE BLOCK ──────────────────────────────────────────── */
+.code-block {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px 16px;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 13px; color: var(--text3);
+  line-height: 1.8; margin: 12px 0;
+}
+
+/* ── SEC LABEL ───────────────────────────────────────────── */
+.sec-label {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 18px; font-weight: 800;
+  color: var(--text); margin-bottom: 16px; letter-spacing: -.01em;
+}
+
+/* ── RESPONSIVE ──────────────────────────────────────────── */
+@media (max-width: 480px) {
+  /* layout */
+  .main           { padding-inline: 0; padding-block: 10px 60px; }
+  .card           { padding: 16px; margin-bottom: 8px; border-radius: 0; border-left: none; border-right: none; }
+  .result-card    { padding: 16px; margin-bottom: 8px; border-radius: 0; border-left: none; border-right: none; }
+  .section-wrap   { margin-bottom: 8px; }
+  .section-hdr    { border-radius: 0; border-left: none; border-right: none; }
+  .section-body   { border-radius: 0; border-left: none; border-right: none; }
+  .math-btn       { border-radius: 0; border-left: none; border-right: none; }
+  .math-panel     { border-radius: 0; border-left: none; border-right: none; }
+
+  /* header */
+  .header-inner   { padding: 8px 12px; gap: 8px; }
+  .logo-mark      { width: 30px; height: 30px; }
+  .app-title-name { font-size: 13px; }
+  .app-title-tagline { font-size: 8px; }
+  .app-title-tool { font-size: 10px; }
+  .theme-btn      { width: 32px; height: 32px; }
+
+  /* tabs — smaller so they all fit */
+  .tab-btn        { padding: 9px 10px; font-size: 10px; letter-spacing: .03em; }
+
+  /* inputs */
+  input[type="number"], input[type="text"] { height: 42px; font-size: 17px; padding: 0 11px; }
+  select          { height: 42px; font-size: 13px; }
+  .unit-badge     { height: 42px; font-size: 12px; padding: 0 11px; }
+  .field-label    { font-size: 13px; margin-bottom: 6px; }
+  .field          { margin-bottom: 11px; }
+  .btn-primary    { height: 48px; font-size: 14px; }
+
+  /* result card */
+  .verdict        { font-size: 22px; }
+  .verdict-ref    { font-size: 9px; letter-spacing: .1em; }
+  .verdict-header { margin-bottom: 10px; }
+  .pct-hero-val   { font-size: 28px; }
+  .pct-hero-lbl   { font-size: 9px; }
+  .pct-hero       { margin-bottom: 10px; }
+  .kpi-row        { gap: 6px; margin-bottom: 11px; }
+  .kpi            { padding: 8px 6px; }
+  .kpi-val        { font-size: 17px; }
+  .kpi-lbl        { font-size: 8px; }
+  .kpi-unit       { font-size: 9px; }
+  .gauge-section  { margin-bottom: 10px; }
+  .margin-chip    { font-size: 11px; margin-bottom: 10px; }
+  .result-narrative { font-size: 12px; padding-top: 10px; }
+
+  /* collapsibles */
+  .section-hdr    { padding: 11px 14px; font-size: 12px; }
+  .section-body   { padding: 12px 13px 14px; }
+  .math-btn       { padding: 11px 14px; font-size: 12px; }
+
+  /* tables */
+  th              { font-size: 8px; padding: 6px 7px; }
+  td              { font-size: 12px; padding: 8px 7px; }
+  .badge          { font-size: 9px; padding: 2px 7px; }
+}
+
+.chev { display: block; }
+</style>
+
+<!-- ================================================================ HTML ================================================================ -->
+
+<div class="app-header">
+  <div class="header-inner">
+    <div class="app-logo">
+      <!-- ApexBioX triangular A mark, reproduced as SVG -->
+      <svg class="logo-mark" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="ApexBioX">
+        <circle cx="19" cy="19" r="19" fill="url(#abx-bg)"/>
+        <!-- outer ring glow -->
+        <circle cx="19" cy="19" r="17.5" stroke="url(#abx-ring)" stroke-width="1.2" fill="none"/>
+        <!-- triangle A -->
+        <path d="M19 6 L31 29 H7 Z" fill="url(#abx-tri)" />
+        <!-- inner cutout notch -->
+        <path d="M14.5 24 L19 14.5 L23.5 24 Z" fill="url(#abx-bg)"/>
+        <!-- horizontal bar inside A -->
+        <rect x="14" y="21" width="10" height="2.2" rx="1" fill="url(#abx-bar)"/>
+        <defs>
+          <linearGradient id="abx-bg" x1="0" y1="0" x2="38" y2="38" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#f5f0ff"/>
+            <stop offset="1" stop-color="#ede8fb"/>
+          </linearGradient>
+          <linearGradient id="abx-tri" x1="7" y1="6" x2="31" y2="29" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#5b10c4"/>
+            <stop offset="1" stop-color="#8b3cf7"/>
+          </linearGradient>
+          <linearGradient id="abx-ring" x1="0" y1="0" x2="38" y2="38" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#8b3cf7"/>
+            <stop offset="1" stop-color="#5b10c4" stop-opacity=".3"/>
+          </linearGradient>
+          <linearGradient id="abx-bar" x1="14" y1="22" x2="24" y2="22" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#c4a2ff"/>
+            <stop offset="1" stop-color="#a87dff"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div class="app-title-block">
+        <div class="app-title-name">APEX BIO<span class="x-purple">X</span></div>
+        <div class="app-title-tagline">Life Science Research</div>
+        <div class="app-title-tool">Endotoxin Calculator</div>
+      </div>
+    </div>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle dark mode">
+      <svg id="themeIcon" viewBox="0 0 20 20" fill="none" width="17" height="17">
+        <path d="M10 2v1M10 17v1M2 10H1M19 10h-1M4.2 4.2l-.7-.7M16.5 15.5l-.7-.7M4.2 15.8l-.7.7M16.5 4.5l-.7.7M13 10a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('main',this)">Calculator</button>
+    <button class="tab-btn" onclick="switchTab('max',this)">Max Endotoxin</button>
+    <button class="tab-btn" onclick="switchTab('compare',this)">Compare Batches</button>
+    <button class="tab-btn" onclick="switchTab('quick',this)">Quick Check</button>
+    <button class="tab-btn" onclick="switchTab('learn',this)">Learn</button>
+    <button class="tab-btn" onclick="switchTab('tests',this)">Tests</button>
+  </div>
+</div>
+
+<main class="main">
+
+<!-- ════ TAB: MAIN ════ -->
+<div id="tab-main" class="tab-panel active">
+  <div class="card">
+    <div class="field">
+      <label class="field-label" for="peptideName">What peptide is this? <span class="field-label-opt">Optional</span></label>
+      <input id="peptideName" type="text" placeholder="e.g. KPV" autocomplete="off">
+    </div>
+    <div class="field">
+      <label class="field-label" for="vialMg">How many mg are in your vial?</label>
+      <div class="input-row">
+        <input id="vialMg" type="number" inputmode="decimal" placeholder="30" min="0.001" step="any">
+        <div class="unit-badge">mg</div>
+      </div>
+      <div id="vialErr" class="field-errmsg">Please enter a vial size greater than 0.</div>
+    </div>
+    <div class="field">
+      <label class="field-label" for="euVal">
+        What did your lab report show?
+        <span class="tip-wrap">
+          <span class="tip-icon">?</span>
+          <span class="tip-bubble">Look for "Endotoxin" on your laboratory report. Many reports show the result as EU/vial.</span>
+        </span>
+      </label>
+      <div class="input-row">
+        <input id="euVal" type="number" inputmode="decimal" placeholder="682.5" min="0" step="any">
+        <select id="euUnit" aria-label="EU unit">
+          <option value="pervial">EU/vial</option>
+          <option value="permg">EU/mg</option>
+        </select>
+      </div>
+      <div id="euErr" class="field-errmsg">Please enter a valid endotoxin value (0 or greater).</div>
+    </div>
+    <div class="field">
+      <label class="field-label" for="doseVal">How much are you taking per dose?</label>
+      <div class="input-row">
+        <input id="doseVal" type="number" inputmode="decimal" placeholder="500" min="0.001" step="any">
+        <select id="doseUnit" aria-label="Dose unit">
+          <option value="mcg">mcg</option>
+          <option value="mg">mg</option>
+        </select>
+      </div>
+      <div id="doseWarn" class="field-warn"></div>
+      <div id="doseErr" class="field-errmsg">Please enter a dose greater than 0.</div>
+    </div>
+    <div class="field">
+      <label class="field-label" for="weightVal">How much do you weigh?</label>
+      <div class="input-row">
+        <input id="weightVal" type="number" inputmode="decimal" placeholder="150" min="1" step="any">
+        <div class="unit-badge">lbs</div>
+      </div>
+      <div id="weightErr" class="field-errmsg">Please enter a weight greater than 0.</div>
+    </div>
+    <div style="margin-bottom:18px">
+      <button class="adv-toggle" id="advToggle" onclick="toggleAdv('advToggle','advBody')">
+        <svg class="adv-chev chev" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Advanced Options
+      </button>
+      <div class="adv-body" id="advBody">
+        <div class="field" style="margin-top:14px">
+          <label class="field-label" for="numDoses">More than one dose within an hour?</label>
+          <div class="input-row">
+            <input id="numDoses" type="number" inputmode="numeric" value="1" min="1" step="1" style="max-width:120px">
+            <div class="unit-badge">dose(s)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="calculate()">Calculate Endotoxin →</button>
+  </div>
+
+  <div id="resultCard" class="result-card">
+    <div class="verdict-header">
+      <div id="verdict" class="verdict"></div>
+      <div id="verdictRef" class="verdict-ref"></div>
+    </div>
+    <div class="pct-hero">
+      <div class="pct-hero-val" id="kpiPct">—</div>
+      <div class="pct-hero-lbl">of FDA/USP Reference</div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="kpi-lbl">Your Exposure</div>
+        <div class="kpi-val" id="kpiEuKg">—</div>
+        <div class="kpi-unit">EU/kg</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">FDA/USP Reference</div>
+        <div class="kpi-val">5.00</div>
+        <div class="kpi-unit">EU/kg</div>
+      </div>
+    </div>
+    <div class="gauge-section">
+      <div class="gauge-head">
+        <span>0</span>
+        <span id="gaugeMaxLabel">5 EU/kg Reference</span>
+      </div>
+      <div class="gauge-track" id="gaugeTrack">
+        <div id="gaugeFill" class="gauge-fill safe" style="width:0%"></div>
+        <div id="gaugeRef" class="gauge-ref-line"></div>
+      </div>
+      <div class="gauge-needle">
+        <div class="gauge-ptr" id="gaugePtr">
+          <span class="gauge-ptr-arrow">▲</span>
+          <span id="gaugePtrVal">0</span>
+        </div>
+      </div>
+    </div>
+    <div id="marginChip" class="margin-chip"></div>
+    <div class="result-narrative">
+      <p id="narrative"></p>
+      <p class="result-scope-note">Endotoxin assessment only.</p>
+    </div>
+  </div>
+
+  <button class="math-btn" id="mathBtn" onclick="toggleMath()">
+    <span>📐 See the Math</span>
+    <svg class="chev" id="mathChev" width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </button>
+  <div class="math-panel" id="mathPanel"><div id="mathRows"></div></div>
+
+  <div class="section-wrap" id="doseWrap" style="display:none">
+    <button class="section-hdr" id="doseHdr" onclick="toggleSection('dose')">
+      <span>📊 Compare Different Doses</span>
+      <svg class="sec-chev chev" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <div class="section-body" id="doseBody">
+      <button class="adv-col-btn" id="doseAdvBtn" onclick="toggleDoseAdv()">Show Advanced Columns</button>
+      <p style="font-size:11px;color:var(--text4);margin-bottom:8px">Compared with the FDA/USP 5 EU/kg endotoxin reference.</p>
+      <div class="tbl-scroll"><table id="doseTable"></table></div>
+    </div>
+  </div>
+
+  <div class="section-wrap" id="wtWrap" style="display:none">
+    <button class="section-hdr" id="wtHdr" onclick="toggleSection('wt')">
+      <span>⚖️ Compare Body Weights</span>
+      <svg class="sec-chev chev" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <div class="section-body" id="wtBody">
+      <button class="adv-col-btn" id="wtAdvBtn" onclick="toggleWtAdv()">Show Advanced Columns</button>
+      <p style="font-size:11px;color:var(--text4);margin-bottom:8px">Compared with the FDA/USP 5 EU/kg endotoxin reference.</p>
+      <div class="tbl-scroll"><table id="wtTable"></table></div>
+    </div>
+  </div>
+
+  <div class="section-wrap" id="dailyWrap" style="display:none">
+    <button class="section-hdr" id="dailyHdr" onclick="toggleSection('daily')">
+      <span>📅 What if I take it every day?</span>
+      <svg class="sec-chev chev" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <div class="section-body" id="dailyBody">
+      <p style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:10px">The FDA/USP 5 EU/kg reference is based on endotoxin exposure within the administration period, generally <strong>one hour</strong>.</p>
+      <p style="font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:10px">Once-daily doses are separate administration periods and are not added together across days for this comparison.</p>
+      <p style="font-size:14px;color:var(--text2);line-height:1.7">If multiple doses are taken within the same one-hour period, their endotoxin exposure should be added together — use the <em>"More than one dose within an hour?"</em> option for this.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════ TAB: MAX ════ -->
+<div id="tab-max" class="tab-panel">
+  <div class="card">
+    <div class="card-label">Reverse Calculator — What's the Maximum?</div>
+    <p style="font-size:14px;color:var(--text2);line-height:1.65;margin-bottom:18px">Enter your details to see what the 5 EU/kg reference translates to in laboratory terms. Compare this with the EU/vial number on your COA.</p>
+    <div class="field">
+      <label class="field-label" for="maxWeight">How much do you weigh?</label>
+      <div class="input-row">
+        <input id="maxWeight" type="number" inputmode="decimal" placeholder="150" min="1" step="any">
+        <div class="unit-badge">lbs</div>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label" for="maxVial">How many mg are in the vial?</label>
+      <div class="input-row">
+        <input id="maxVial" type="number" inputmode="decimal" placeholder="30" min="0.001" step="any">
+        <div class="unit-badge">mg</div>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label" for="maxDose">How much are you taking per dose?</label>
+      <div class="input-row">
+        <input id="maxDose" type="number" inputmode="decimal" placeholder="500" min="0.001" step="any">
+        <select id="maxDoseUnit"><option value="mcg">mcg</option><option value="mg">mg</option></select>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="calcMax()">Calculate Maximum →</button>
+  </div>
+  <div class="rev-result" id="maxResult">
+    <div class="rev-title">5 EU/kg Reference Would Correspond To:</div>
+    <div class="rev-row"><span class="rev-k">Maximum EU per dose</span><span class="rev-v" id="maxEuDose">—</span></div>
+    <div class="rev-row"><span class="rev-k">Maximum EU/mg</span><span class="rev-v" id="maxEuMg">—</span></div>
+    <div class="rev-row"><span class="rev-k">Maximum EU/vial</span><span class="rev-v" id="maxEuVial">—</span></div>
+  </div>
+  <div class="disclaimer"><strong>Note:</strong> This is a mathematical reverse calculation of the 5 EU/kg reference. It is not a laboratory specification assigned to this particular peptide.</div>
+</div>
+
+<!-- ════ TAB: COMPARE ════ -->
+<div id="tab-compare" class="tab-panel">
+  <div class="card">
+    <div class="card-label">Your Body Weight (used for all batches)</div>
+    <div class="input-row">
+      <input id="batchWeight" type="number" inputmode="decimal" placeholder="150" min="1" step="any">
+      <div class="unit-badge">lbs</div>
+    </div>
+  </div>
+  <div id="batchEntries"></div>
+  <button class="add-batch-btn" onclick="addBatch()">+ Add Another Batch</button>
+  <div id="batchResultWrap" hidden>
+    <div class="sort-wrap">
+      <span class="sort-lbl">Sort:</span>
+      <button class="sort-btn active" id="sortEuBtn" onclick="sortBatch('eu')">Lowest EU/dose</button>
+      <button class="sort-btn" id="sortPctBtn" onclick="sortBatch('pct')">Lowest % of reference</button>
+    </div>
+    <button class="adv-col-btn" id="batchAdvBtn" onclick="toggleBatchAdv()">Show Advanced Details</button>
+    <p style="font-size:11px;color:var(--text4);margin-bottom:8px">Compared with the FDA/USP 5 EU/kg endotoxin reference.</p>
+    <div class="tbl-scroll"><table id="batchTable"></table></div>
+  </div>
+  <button class="btn-primary" onclick="calcBatches()">Compare Batches →</button>
+</div>
+
+<!-- ════ TAB: QUICK ════ -->
+<div id="tab-quick" class="tab-panel">
+  <div class="card">
+    <div class="card-label">Quick COA Check — Fewest Steps</div>
+    <div style="margin-bottom:12px">
+      <label class="mini-label" for="qVial">Vial size (mg)</label>
+      <input id="qVial" class="mini-input" type="number" inputmode="decimal" placeholder="30" min="0" step="any">
+    </div>
+    <div class="mini-row" style="margin-bottom:12px">
+      <div class="mini-field">
+        <label class="mini-label" for="qEu">EU/vial</label>
+        <input id="qEu" class="mini-input" type="number" inputmode="decimal" placeholder="682.5" min="0" step="any">
+      </div>
+    </div>
+    <div class="mini-row" style="margin-bottom:12px">
+      <div class="mini-field"><label class="mini-label" for="qDose">Dose</label><input id="qDose" class="mini-input" type="number" inputmode="decimal" placeholder="500" min="0" step="any"></div>
+      <div class="mini-field"><label class="mini-label" for="qDoseUnit">Unit</label><select id="qDoseUnit" class="mini-select"><option value="mcg">mcg</option><option value="mg">mg</option></select></div>
+    </div>
+    <div style="margin-bottom:14px">
+      <label class="mini-label" for="qWeight">Weight (lbs)</label>
+      <input id="qWeight" class="mini-input" type="number" inputmode="decimal" placeholder="150" min="1" step="any">
+    </div>
+    <button class="btn-primary" onclick="calcQuick()">Check →</button>
+  </div>
+  <div class="quick-verdict" id="quickVerdict">
+    <div class="quick-text" id="quickText"></div>
+    <div class="quick-sub" id="quickSub"></div>
+    <div class="quick-scope">Endotoxin assessment only</div>
+  </div>
+</div>
+
+<!-- ════ TAB: LEARN ════ -->
+<div id="tab-learn" class="tab-panel">
+  <div class="card">
+    <div class="sec-label">What Do These Numbers Mean?</div>
+    <div class="gloss-item"><div class="gloss-term">EU</div><div class="gloss-def">EU means Endotoxin Units. This is how laboratories report bacterial endotoxin.</div></div>
+    <div class="gloss-item"><div class="gloss-term">EU/vial</div><div class="gloss-def">The total amount of measured endotoxin associated with the entire vial.</div></div>
+    <div class="gloss-item"><div class="gloss-term">EU/mg</div><div class="gloss-def">How much endotoxin corresponds to each milligram of peptide.</div></div>
+    <div class="gloss-item"><div class="gloss-term">EU/dose</div><div class="gloss-def">How much endotoxin is calculated to be in the amount you are actually taking.</div></div>
+    <div class="gloss-item"><div class="gloss-term">EU/kg</div><div class="gloss-def">Your endotoxin exposure adjusted for your body weight. The FDA/USP reference is 5 EU/kg.</div></div>
+    <div class="gloss-item"><div class="gloss-term">FDA/USP 5 EU/kg Reference</div><div class="gloss-def">The general endotoxin reference used by this calculator for ordinary non-intrathecal parenteral exposure. The FDA has not evaluated the specific peptide, vial, or batch.</div></div>
+    <div class="gloss-item"><div class="gloss-term">Why does dose matter?</div><div class="gloss-def">You usually take only part of a vial. The endotoxin in your actual dose can therefore be much lower than the total EU reported for the entire vial.</div></div>
+    <div class="gloss-item"><div class="gloss-term">Why does weight matter?</div><div class="gloss-def">The reference is based on body weight, so the calculator automatically converts your weight and does the math for you.</div></div>
+  </div>
+  <div class="card">
+    <div class="sec-label">Frequently Asked Questions</div>
+    <div class="faq-q" onclick="toggleFaq(this)">What is bacterial endotoxin?<svg class="faq-chev chev" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <div class="faq-a">Bacterial endotoxins are substances released from certain bacteria. In injectable products, endotoxin levels are a key quality control measurement. Laboratory test results appear on a Certificate of Analysis (COA).</div>
+    <div class="faq-q" onclick="toggleFaq(this)">What does "WITHIN FDA/USP ENDOTOXIN REFERENCE" mean?<svg class="faq-chev chev" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <div class="faq-a">It means the calculated endotoxin exposure from your dose is within the FDA/USP 5 EU/kg reference used by this calculator. It does not mean that the FDA has evaluated or approved the specific product — it refers only to the endotoxin calculation, not to sterility, peptide purity, or any other aspect.</div>
+    <div class="faq-q" onclick="toggleFaq(this)">What if I take it every day?<svg class="faq-chev chev" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <div class="faq-a">The 5 EU/kg reference is based on the amount administered within one hour. A once-daily injection should not be multiplied by 7, 30, or 365 and compared with the 5 EU/kg one-hour reference. Monday's dose and Tuesday's dose are separate administration periods. However, multiple doses within the same hour should be added together.</div>
+    <div class="faq-q" onclick="toggleFaq(this)">What is a COA?<svg class="faq-chev chev" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <div class="faq-a">COA stands for Certificate of Analysis — a laboratory document reporting test results for a peptide batch. Look for the "Endotoxin" line to find the EU value to enter in this calculator.</div>
+    <div class="faq-q last" onclick="toggleFaq(this)">Is this for intrathecal use?<svg class="faq-chev chev" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <div class="faq-a">No. This calculator uses the 5 EU/kg reference for ordinary non-intrathecal parenteral administration. Do not use this calculator for intrathecal administration, which has a much stricter reference limit.</div>
+  </div>
+  <div class="disclaimer"><strong>Scope:</strong> This calculator evaluates bacterial endotoxin exposure only. A SAFE / WITHIN FDA/USP ENDOTOXIN REFERENCE result means the calculated exposure is within the FDA/USP 5 EU/kg reference used by this calculator. The FDA has not evaluated the specific peptide, vial, or batch. This result does not establish sterility, peptide identity, purity, potency, or absence of other contaminants.<br><br><strong>Not for intrathecal administration.</strong></div>
+</div>
+
+<!-- ════ TAB: TESTS ════ -->
+<div id="tab-tests" class="tab-panel">
+  <div class="card">
+    <div class="card-label">Automated Calculation Tests</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:16px">All formulas verified against expected values from the spec.</p>
+    <div id="testOutput"></div>
+  </div>
+</div>
+
+</main>
+
+<!-- ================================================================ JAVASCRIPT ================================================================ -->
+<script>
+const LIMIT = 5;
+function lbsToKg(lbs) { return lbs / 2.20462; }
+function mcgToMg(mcg) { return mcg / 1000; }
+
+function calcEndotoxin({ vialMg, euValue, euUnit, doseMg, weightKg, numDoses = 1 }) {
+  const euPerMg   = euUnit === 'pervial' ? euValue / vialMg : euValue;
+  const euPerDose = euPerMg * doseMg;
+  const totalEu   = euPerDose * numDoses;
+  const actualEuKg = totalEu / weightKg;
+  const referenceEu = weightKg * LIMIT;
+  const pct       = (actualEuKg / LIMIT) * 100;
+  const safe      = actualEuKg <= LIMIT;
+  const margin    = (safe && actualEuKg > 0) ? LIMIT / actualEuKg : null;
+  const headroom  = referenceEu - totalEu;
+  const pctAbove  = !safe ? ((actualEuKg - LIMIT) / LIMIT) * 100 : null;
+  return { euPerMg, euPerDose, totalEu, actualEuKg, referenceEu, pct, safe, margin, headroom, pctAbove };
+}
+
+function calcReverse({ weightKg, vialMg, doseMg }) {
+  const maxEuDose = LIMIT * weightKg;
+  const maxEuMg   = maxEuDose / doseMg;
+  const maxEuVial = maxEuMg * vialMg;
+  return { maxEuDose, maxEuMg, maxEuVial };
+}
+
+function f(n, d) { return Number(n).toFixed(d); }
+function safeBadge()   { return '<span class="badge safe">✓ WITHIN</span>'; }
+function unsafeBadge() { return '<span class="badge unsafe">✕ EXCEEDS</span>'; }
+
+function g(id)  { return document.getElementById(id); }
+function gn(id) { return parseFloat(g(id).value) || 0; }
+function gv(id) { return g(id).value; }
+function setVisible(id, vis) { g(id).hidden = !vis; }
+function setErrMsg(id, on)   { g(id).classList.toggle('show', on); }
+function setErrInput(id, on) { g(id).classList.toggle('err', on); }
+
+function validate() {
+  const vialMg = gn('vialMg'), euVal = gn('euVal'), euUnit = gv('euUnit');
+  const doseVal = gn('doseVal'), doseUnit = gv('doseUnit'), weightLbs = gn('weightVal');
+  let ok = true;
+  const checks = [
+    [vialMg <= 0,   'vialMg',   'vialErr'],
+    [euVal < 0,     'euVal',    'euErr'],
+    [doseVal <= 0,  'doseVal',  'doseErr'],
+    [weightLbs <= 0,'weightVal','weightErr'],
+  ];
+  checks.forEach(([bad, inputId, errId]) => {
+    setErrInput(inputId, bad); setErrMsg(errId, bad);
+    if (bad) ok = false;
+  });
+  if (ok) {
+    const doseMg = doseUnit === 'mcg' ? mcgToMg(doseVal) : doseVal;
+    const warnEl = g('doseWarn');
+    if (doseUnit === 'mg' && doseVal > vialMg) {
+      warnEl.textContent = `⚠️ Check your dose: you entered ${doseVal} mg, which is more than the entire ${vialMg} mg vial. Did you mean ${doseVal * 1000} mcg?`;
+      warnEl.classList.add('show');
+    } else if (doseUnit === 'mcg' && doseMg > vialMg) {
+      warnEl.textContent = `⚠️ Your dose (${doseVal} mcg = ${f(doseMg,3)} mg) is larger than the vial (${vialMg} mg). Please check your numbers.`;
+      warnEl.classList.add('show');
+    } else { warnEl.classList.remove('show'); }
+  }
+  return ok;
+}
+
+let lastCalc = null, doseAdvOn = false, wtAdvOn = false, batchAdvOn = false;
+
+function calculate() {
+  if (!validate()) return;
+  const vialMg = gn('vialMg'), euValue = gn('euVal'), euUnit = gv('euUnit');
+  const doseVal = gn('doseVal'), doseUnit = gv('doseUnit');
+  const weightLbs = gn('weightVal');
+  const numDoses = Math.max(1, parseInt(g('numDoses').value) || 1);
+  const peptide = g('peptideName').value.trim();
+  const doseMg = doseUnit === 'mcg' ? mcgToMg(doseVal) : doseVal;
+  const weightKg = lbsToKg(weightLbs);
+  const r = calcEndotoxin({ vialMg, euValue, euUnit, doseMg, weightKg, numDoses });
+  lastCalc = { ...r, vialMg, euValue, euUnit, doseVal, doseUnit, doseMg, weightLbs, weightKg, numDoses, peptide };
+  renderResult(r);
+  buildMath(lastCalc);
+  buildDoseTable(lastCalc);
+  buildWtTable(lastCalc);
+  g('doseWrap').style.display = g('wtWrap').style.display = g('dailyWrap').style.display = 'block';
+  g('resultCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function renderResult(r) {
+  const safe = r.safe;
+  const card = g('resultCard');
+  card.className = 'result-card show ' + (safe ? 'safe' : 'unsafe');
+
+  // Verdict — large SAFE/UNSAFE
+  const v = g('verdict');
+  v.textContent = safe ? '✓ SAFE' : '✕ UNSAFE';
+  v.className   = 'verdict ' + (safe ? 'safe' : 'unsafe');
+
+  // Subline — WITHIN / EXCEEDS FDA/USP ENDOTOXIN REFERENCE
+  const vref = g('verdictRef');
+  vref.textContent = safe ? 'WITHIN FDA/USP ENDOTOXIN REFERENCE' : 'EXCEEDS FDA/USP ENDOTOXIN REFERENCE';
+  vref.className = 'verdict-ref ' + (safe ? 'safe' : 'unsafe');
+
+  // % of reference (hero number)
+  const pctEl = g('kpiPct');
+  pctEl.textContent = f(r.pct, 1) + '%';
+  pctEl.className = 'pct-hero-val ' + (safe ? 'safe' : 'unsafe');
+
+  g('kpiEuKg').textContent = f(r.actualEuKg, 3);
+
+  const gaugeMax = safe ? 5 : Math.max(r.actualEuKg * 1.3, 6.5);
+  const fillWidth = Math.min((r.actualEuKg / gaugeMax) * 100, 100);
+  const fill = g('gaugeFill');
+  fill.style.width = fillWidth + '%';
+  fill.className = 'gauge-fill ' + (safe ? 'safe' : 'unsafe');
+  const refLine = g('gaugeRef');
+  if (!safe) {
+    refLine.style.left = ((5 / gaugeMax) * 100) + '%';
+    refLine.style.display = 'block';
+    g('gaugeMaxLabel').textContent = f(gaugeMax, 1) + ' EU/kg (extended)';
+  } else {
+    refLine.style.display = 'none';
+    g('gaugeMaxLabel').textContent = 'FDA/USP 5 EU/kg Reference';
+  }
+  const ptrPct = Math.min((r.actualEuKg / gaugeMax) * 100, 98);
+  g('gaugePtr').style.left = ptrPct + '%';
+  g('gaugePtrVal').textContent = f(r.actualEuKg, 3);
+  const chip = g('marginChip');
+  if (safe && r.margin) {
+    chip.textContent = f(r.margin, 2) + '× below FDA/USP reference';
+    chip.className = 'margin-chip safe';
+  } else if (!safe) {
+    chip.textContent = f(r.pctAbove, 1) + '% above FDA/USP reference';
+    chip.className = 'margin-chip unsafe';
+  } else { chip.textContent = ''; }
+  g('narrative').textContent = safe
+    ? 'Based on the numbers you entered, your calculated endotoxin exposure is within the FDA/USP 5 EU/kg reference used by this calculator.'
+    : 'Based on the numbers you entered, your calculated endotoxin exposure exceeds the FDA/USP 5 EU/kg reference used by this calculator.';
+  g('mathBtn').classList.add('show');
+}
+
+function buildMath(d) {
+  const rows = [
+    ['Peptide', d.peptide || '(not entered)'],
+    ['Vial', `${d.vialMg} mg`],
+    ['COA result', `${d.euValue} ${d.euUnit === 'pervial' ? 'EU/vial' : 'EU/mg'}`],
+    ['Endotoxin concentration', `${f(d.euPerMg, 3)} EU/mg`],
+    ['Dose', `${d.doseVal} ${d.doseUnit} (${f(d.doseMg, 4)} mg)`],
+    ['Doses within one hour', `${d.numDoses}`],
+    ['Endotoxin per dose', `${f(d.euPerDose, 3)} EU`],
+    ['Total EU (one hour)', `${f(d.totalEu, 3)} EU`],
+    ['Weight', `${d.weightLbs} lb (${f(d.weightKg, 2)} kg)`],
+    ['Actual exposure', `${f(d.actualEuKg, 3)} EU/kg`],
+    ['FDA/USP Reference', `${LIMIT}.000 EU/kg`],
+    ['Max reference exposure', `${f(d.referenceEu, 2)} EU`],
+    ['% of FDA/USP reference', `${f(d.pct, 2)}%`],
+    d.margin ? ['Margin below reference', `${f(d.margin, 2)}× below`] : ['% above reference', `${f(d.pctAbove, 2)}% above`],
+    ['Headroom', `${f(d.headroom, 2)} EU`],
+  ];
+  g('mathRows').innerHTML = rows.map(([k, v]) =>
+    `<div class="math-row"><span class="math-k">${k}</span><span class="math-v">${v}</span></div>`
+  ).join('');
+}
+
+const DOSE_STEPS = [
+  { label: '250 mcg', mg: 0.25 },
+  { label: '500 mcg', mg: 0.5 },
+  { label: '750 mcg', mg: 0.75 },
+  { label: '1 mg', mg: 1 },
+  { label: '1.5 mg', mg: 1.5 },
+  { label: '2 mg', mg: 2 },
+];
+
+function buildDoseTable(d) {
+  const adv = doseAdvOn;
+  let html = `<thead><tr><th>Dose</th><th>Endotoxin</th><th>% of Ref</th>${adv ? '<th>EU/kg</th><th>EU/mg</th><th>Margin</th><th>Headroom</th>' : ''}<th>Result</th></tr></thead><tbody>`;
+  DOSE_STEPS.forEach(step => {
+    if (step.mg > d.vialMg * 1.001) return;
+    const r = calcEndotoxin({ vialMg: d.vialMg, euValue: d.euValue, euUnit: d.euUnit, doseMg: step.mg, weightKg: d.weightKg, numDoses: 1 });
+    const hl = Math.abs(step.mg - d.doseMg) < 0.0001 ? ' class="hl"' : '';
+    html += `<tr${hl}><td>${step.label}${hl ? ' ★' : ''}</td><td>${f(r.euPerDose, 2)} EU</td><td>${f(r.pct, 1)}%</td>${adv ? `<td>${f(r.actualEuKg,3)}</td><td>${f(r.euPerMg,3)}</td><td>${r.margin ? f(r.margin,2)+'×' : '—'}</td><td>${f(r.headroom,2)} EU</td>` : ''}<td>${r.safe ? safeBadge() : unsafeBadge()}</td></tr>`;
+  });
+  html += '</tbody>';
+  g('doseTable').innerHTML = html;
+}
+
+const WT_STEPS = [120, 135, 150, 165, 180, 195];
+function buildWtTable(d) {
+  const adv = wtAdvOn;
+  let html = `<thead><tr><th>Weight</th><th>% of Ref</th>${adv ? '<th>kg</th><th>EU/dose</th><th>EU/kg</th><th>Ref EU</th><th>Margin</th>' : ''}<th>Result</th></tr></thead><tbody>`;
+  WT_STEPS.forEach(lbs => {
+    const kg = lbsToKg(lbs);
+    const r = calcEndotoxin({ vialMg: d.vialMg, euValue: d.euValue, euUnit: d.euUnit, doseMg: d.doseMg, weightKg: kg, numDoses: d.numDoses });
+    const hl = Math.abs(lbs - d.weightLbs) < 0.5 ? ' class="hl"' : '';
+    html += `<tr${hl}><td>${lbs} lb${hl ? ' ★' : ''}</td><td>${f(r.pct, 1)}%</td>${adv ? `<td>${f(kg,2)}</td><td>${f(r.euPerDose,2)} EU</td><td>${f(r.actualEuKg,3)}</td><td>${f(r.referenceEu,2)} EU</td><td>${r.margin ? f(r.margin,2)+'×' : '—'}</td>` : ''}<td>${r.safe ? safeBadge() : unsafeBadge()}</td></tr>`;
+  });
+  html += '</tbody>';
+  g('wtTable').innerHTML = html;
+}
+
+function buildDailyExample(d) {
+  const eu = f(d.euPerDose, 2);
+  g('dailyExample').innerHTML = `Monday: ${eu} EU<br>Tuesday: ${eu} EU<br>Wednesday: ${eu} EU`;
+}
+
+function calcMax() {
+  const weightLbs = gn('maxWeight'), vialMg = gn('maxVial'), doseVal = gn('maxDose'), doseUnit = gv('maxDoseUnit');
+  if (!weightLbs || !vialMg || !doseVal) { alert('Please fill in all fields.'); return; }
+  const weightKg = lbsToKg(weightLbs);
+  const doseMg   = doseUnit === 'mcg' ? mcgToMg(doseVal) : doseVal;
+  const r = calcReverse({ weightKg, vialMg, doseMg });
+  g('maxEuDose').textContent = f(r.maxEuDose, 2) + ' EU';
+  g('maxEuMg').textContent   = f(r.maxEuMg, 2) + ' EU/mg';
+  g('maxEuVial').textContent = f(r.maxEuVial, 2) + ' EU/vial';
+  g('maxResult').classList.add('show');
+}
+
+let batches = [], batchSort = 'eu', lastBatchRows = [];
+function addBatch() { const id = Date.now() + Math.random(); batches.push({ id }); renderBatchEntries(); }
+function removeBatch(id) { batches = batches.filter(b => b.id !== id); renderBatchEntries(); }
+function renderBatchEntries() {
+  const wrap = g('batchEntries'); wrap.innerHTML = '';
+  batches.forEach((b, i) => {
+    const div = document.createElement('div');
+    div.className = 'batch-entry';
+    div.innerHTML = `<button class="batch-rm" onclick="removeBatch(${b.id})">✕</button>
+      <div class="batch-num">Batch ${i + 1}</div>
+      <div class="mini-row" style="margin-bottom:10px">
+        <div class="mini-field"><label class="mini-label">Peptide</label><input class="mini-input" data-b="${b.id}" data-f="name" type="text" placeholder="KPV"></div>
+        <div class="mini-field"><label class="mini-label">Batch label</label><input class="mini-input" data-b="${b.id}" data-f="label" type="text" placeholder="Lot A"></div>
+      </div>
+      <div class="mini-row" style="margin-bottom:10px">
+        <div class="mini-field"><label class="mini-label">mg/vial</label><input class="mini-input" data-b="${b.id}" data-f="vialMg" type="number" inputmode="decimal" placeholder="30" min="0" step="any"></div>
+        <div class="mini-field"><label class="mini-label">EU/vial</label><input class="mini-input" data-b="${b.id}" data-f="eu" type="number" inputmode="decimal" placeholder="682.5" min="0" step="any"></div>
+      </div>
+      <div class="mini-row">
+        <div class="mini-field"><label class="mini-label">Dose</label><input class="mini-input" data-b="${b.id}" data-f="dose" type="number" inputmode="decimal" placeholder="500" min="0" step="any"></div>
+        <div class="mini-field"><label class="mini-label">Unit</label><select class="mini-select" data-b="${b.id}" data-f="doseUnit"><option value="mcg">mcg</option><option value="mg">mg</option></select></div>
+      </div>`;
+    wrap.appendChild(div);
+  });
+}
+function getBatchRows() {
+  return batches.map(b => {
+    const fields = {};
+    document.querySelectorAll(`[data-b="${b.id}"]`).forEach(el => { fields[el.dataset.f] = el.value; });
+    return fields;
+  });
+}
+function calcBatches() {
+  const weightLbs = gn('batchWeight');
+  if (!weightLbs) { alert('Please enter your body weight.'); return; }
+  const weightKg = lbsToKg(weightLbs);
+  const rows = getBatchRows(); const results = [];
+  rows.forEach((row, i) => {
+    const vialMg = parseFloat(row.vialMg) || 0, eu = parseFloat(row.eu) || 0;
+    const doseVal = parseFloat(row.dose) || 0, doseUnit = row.doseUnit || 'mcg';
+    if (!vialMg || !eu || !doseVal) return;
+    const doseMg = doseUnit === 'mcg' ? mcgToMg(doseVal) : doseVal;
+    const r = calcEndotoxin({ vialMg, euValue: eu, euUnit: 'pervial', doseMg, weightKg, numDoses: 1 });
+    results.push({ ...r, name: row.name || `Peptide ${i+1}`, label: row.label || `Batch ${i+1}`, vialMg, eu, doseVal, doseUnit });
+  });
+  if (!results.length) { alert('Please fill in at least one batch with all required fields.'); return; }
+  lastBatchRows = results; renderBatchTable(); setVisible('batchResultWrap', true);
+}
+function renderBatchTable() {
+  const adv = batchAdvOn;
+  let sorted = [...lastBatchRows];
+  if (batchSort === 'eu') sorted.sort((a, b) => a.euPerDose - b.euPerDose);
+  else sorted.sort((a, b) => a.pct - b.pct);
+  let html = `<thead><tr><th>Batch</th><th>EU/dose</th><th>% of Ref</th>${adv ? '<th>mg/vial</th><th>EU/vial</th><th>EU/mg</th><th>EU/kg</th><th>Margin</th><th>Headroom</th>' : ''}<th>Result</th></tr></thead><tbody>`;
+  sorted.forEach(r => {
+    html += `<tr><td><strong>${r.name}</strong><br><span style="font-size:11px;color:var(--text4)">${r.label}</span></td><td>${f(r.euPerDose,2)} EU</td><td>${f(r.pct,1)}%</td>${adv ? `<td>${r.vialMg}</td><td>${r.eu}</td><td>${f(r.euPerMg,3)}</td><td>${f(r.actualEuKg,3)}</td><td>${r.margin ? f(r.margin,2)+'×' : '—'}</td><td>${f(r.headroom,2)} EU</td>` : ''}<td>${r.safe ? safeBadge() : unsafeBadge()}</td></tr>`;
+  });
+  html += '</tbody>';
+  g('batchTable').innerHTML = html;
+}
+function sortBatch(mode) {
+  batchSort = mode;
+  g('sortEuBtn').classList.toggle('active', mode === 'eu');
+  g('sortPctBtn').classList.toggle('active', mode === 'pct');
+  if (lastBatchRows.length) renderBatchTable();
+}
+function toggleBatchAdv() {
+  batchAdvOn = !batchAdvOn;
+  g('batchAdvBtn').textContent = batchAdvOn ? 'Hide Advanced Details' : 'Show Advanced Details';
+  if (lastBatchRows.length) renderBatchTable();
+}
+
+function calcQuick() {
+  const vialMg = parseFloat(g('qVial').value) || 0;
+  const eu = parseFloat(g('qEu').value) || 0;
+  const doseVal = parseFloat(g('qDose').value) || 0;
+  const doseUnit = g('qDoseUnit').value;
+  const weightLbs = parseFloat(g('qWeight').value) || 0;
+  if (!vialMg || !eu || !doseVal || !weightLbs) { alert('Please fill in all fields.'); return; }
+  const doseMg = doseUnit === 'mcg' ? mcgToMg(doseVal) : doseVal;
+  const weightKg = lbsToKg(weightLbs);
+  const r = calcEndotoxin({ vialMg, euValue: eu, euUnit: 'pervial', doseMg, weightKg, numDoses: 1 });
+  const el = g('quickVerdict'); const safe = r.safe;
+  el.className = 'quick-verdict show ' + (safe ? 'safe' : 'unsafe');
+  const qText = g('quickText');
+  qText.textContent = safe ? '✓ SAFE' : '✕ UNSAFE';
+  qText.className = 'quick-text ' + (safe ? 'safe' : 'unsafe');
+  g('quickSub').textContent = (safe ? 'Within' : 'Exceeds') + ` FDA/USP reference · ${f(r.actualEuKg,3)} EU/kg · ${f(r.pct,1)}% of reference`;
+}
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  g('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+function toggleTheme() {
+  const root = document.documentElement;
+  const isDark = root.getAttribute('data-theme') === 'dark';
+  root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+}
+function toggleAdv(btnId, bodyId) {
+  g(btnId).classList.toggle('open');
+  g(bodyId).classList.toggle('open');
+}
+function toggleMath() {
+  g('mathBtn').classList.toggle('open');
+  g('mathPanel').classList.toggle('open');
+  g('mathChev').style.transform = g('mathPanel').classList.contains('open') ? 'rotate(180deg)' : '';
+}
+function toggleSection(key) {
+  g(key + 'Hdr').classList.toggle('open');
+  g(key + 'Body').classList.toggle('open');
+}
+function toggleDoseAdv() {
+  doseAdvOn = !doseAdvOn;
+  g('doseAdvBtn').textContent = doseAdvOn ? 'Hide Advanced Columns' : 'Show Advanced Columns';
+  if (lastCalc) buildDoseTable(lastCalc);
+}
+function toggleWtAdv() {
+  wtAdvOn = !wtAdvOn;
+  g('wtAdvBtn').textContent = wtAdvOn ? 'Hide Advanced Columns' : 'Show Advanced Columns';
+  if (lastCalc) buildWtTable(lastCalc);
+}
+function toggleFaq(el) {
+  el.classList.toggle('expanded');
+  el.nextElementSibling.classList.toggle('open');
+}
+
+function runTests() {
+  const tests = [];
+  function assert(name, actual, expected, tol = 0.001) { tests.push({ name, pass: Math.abs(actual - expected) <= tol, actual, expected }); }
+  function assertBool(name, actual, expected) { tests.push({ name, pass: actual === expected, actual, expected }); }
+  function assertTrue(name, cond, note='') { tests.push({ name, pass: !!cond, actual: note || String(cond), expected: 'true' }); }
+
+  assert('lbs→kg: 120 lb', lbsToKg(120), 54.4311, 0.01);
+  assert('lbs→kg: 150 lb', lbsToKg(150), 68.0389, 0.01);
+  assert('mcg→mg: 500 mcg', mcgToMg(500), 0.5);
+  assert('mcg→mg: 250 mcg', mcgToMg(250), 0.25);
+  const tc0 = calcEndotoxin({ vialMg:30, euValue:682.5, euUnit:'pervial', doseMg:1, weightKg:70, numDoses:1 });
+  assert('EU/vial→EU/mg: 682.5÷30', tc0.euPerMg, 22.75, 0.01);
+  const tc0m = calcEndotoxin({ vialMg:30, euValue:22.75, euUnit:'permg', doseMg:1, weightKg:70, numDoses:1 });
+  assert('EU/mg mode direct', tc0m.euPerMg, 22.75, 0.01);
+  const tc1 = calcEndotoxin({ vialMg:30, euValue:682.5, euUnit:'pervial', doseMg:0.5, weightKg:lbsToKg(120), numDoses:1 });
+  assert('TC1: EU/mg = 22.75', tc1.euPerMg, 22.75, 0.01);
+  assert('TC1: EU/dose = 11.375', tc1.euPerDose, 11.375, 0.01);
+  assert('TC1: EU/kg ≈ 0.209', tc1.actualEuKg, 0.209, 0.005);
+  assert('TC1: ref EU ≈ 272.16', tc1.referenceEu, 272.16, 0.5);
+  assert('TC1: % ≈ 4.18%', tc1.pct, 4.18, 0.1);
+  assert('TC1: margin ≈ 23.93×', tc1.margin, 23.93, 0.5);
+  assertBool('TC1: SAFE', tc1.safe, true);
+  const tc2 = calcEndotoxin({ vialMg:30, euValue:682.5, euUnit:'pervial', doseMg:1, weightKg:lbsToKg(120), numDoses:1 });
+  assert('TC2: EU/mg = 22.75', tc2.euPerMg, 22.75, 0.01);
+  assert('TC2: EU/dose = 22.75', tc2.euPerDose, 22.75, 0.01);
+  assert('TC2: EU/kg ≈ 0.418', tc2.actualEuKg, 0.418, 0.005);
+  assert('TC2: % ≈ 8.36%', tc2.pct, 8.36, 0.1);
+  assert('TC2: margin ≈ 11.96×', tc2.margin, 11.96, 0.5);
+  assertBool('TC2: SAFE', tc2.safe, true);
+  const tc3 = calcEndotoxin({ vialMg:30, euValue:900, euUnit:'pervial', doseMg:15, weightKg:lbsToKg(150), numDoses:1 });
+  assertBool('TC3: UNSAFE (>5 EU/kg)', tc3.safe, false);
+  assertTrue('TC3: pct > 100%', tc3.pct > 100, `pct=${f(tc3.pct,2)}`);
+  assertTrue('TC3: pctAbove exists', tc3.pctAbove !== null, String(tc3.pctAbove));
+  const tcBound = calcEndotoxin({ vialMg:10, euValue:500, euUnit:'pervial', doseMg:1, weightKg:10, numDoses:1 });
+  assert('Boundary: exactly 5 EU/kg', tcBound.actualEuKg, 5, 0.0000001);
+  assertBool('Boundary: 5.000 = SAFE', tcBound.safe, true);
+  const tcAbove = calcEndotoxin({ vialMg:10, euValue:500.001, euUnit:'pervial', doseMg:1, weightKg:10, numDoses:1 });
+  assertBool('Boundary: >5 EU/kg = UNSAFE', tcAbove.safe, false);
+  assert('EU/dose calc', tc1.euPerDose, tc1.euPerMg * 0.5, 0.0001);
+  assert('EU/kg calc (TC1)', tc1.actualEuKg, tc1.totalEu / lbsToKg(120), 0.0001);
+  assert('Ref EU: 70kg × 5 = 350', calcEndotoxin({ vialMg:100,euValue:100,euUnit:'pervial',doseMg:1,weightKg:70,numDoses:1 }).referenceEu, 350, 0.01);
+  assert('% calc: (euKg/5)×100', tc1.pct, (tc1.actualEuKg / 5) * 100, 0.0001);
+  assert('Margin: 5÷euKg (TC1)', tc1.margin, 5 / tc1.actualEuKg, 0.001);
+  assert('Headroom: refEU - totalEU', tc1.headroom, tc1.referenceEu - tc1.totalEu, 0.001);
+  const multi = calcEndotoxin({ vialMg:30, euValue:100, euUnit:'pervial', doseMg:1, weightKg:70, numDoses:3 });
+  assert('Multi-dose: 3× adds EU', multi.totalEu, (100/30)*1*3, 0.001);
+  const rev = calcReverse({ weightKg:lbsToKg(150), vialMg:30, doseMg:0.5 });
+  assert('Reverse: maxEuDose=5×kg', rev.maxEuDose, 5*lbsToKg(150), 0.01);
+  assert('Reverse: maxEuMg=dose÷0.5', rev.maxEuMg, rev.maxEuDose / 0.5, 0.01);
+  assert('Reverse: maxEuVial=mg×30', rev.maxEuVial, rev.maxEuMg * 30, 0.01);
+
+  const pass = tests.filter(t => t.pass).length;
+  const fail = tests.filter(t => !t.pass).length;
+  g('testOutput').innerHTML = `
+    <div class="test-summary">
+      <div class="test-pill" style="background:var(--safe-bg);border:1px solid var(--safe-border)">
+        <div class="test-pill-val" style="color:var(--safe)">${pass}</div>
+        <div class="test-pill-lbl" style="color:var(--safe)">Passed</div>
+      </div>
+      <div class="test-pill" style="background:${fail?'var(--unsafe-bg)':'var(--safe-bg)'};border:1px solid ${fail?'var(--unsafe-border)':'var(--safe-border)'}">
+        <div class="test-pill-val" style="color:${fail?'var(--unsafe)':'var(--safe)'}">${fail}</div>
+        <div class="test-pill-lbl" style="color:${fail?'var(--unsafe)':'var(--safe)'}">Failed</div>
+      </div>
+    </div>
+    ${tests.map(t => `<div class="test-row"><span class="test-name">${t.name}</span><span class="${t.pass ? 'test-pass' : 'test-fail'}">${t.pass ? '✓' : `✗ got ${typeof t.actual==='number'?Number(t.actual).toFixed(5):t.actual}`}</span></div>`).join('')}`;
+}
+
+(function init() {
+  addBatch(); addBatch();
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+  runTests();
+})();
+</script>
